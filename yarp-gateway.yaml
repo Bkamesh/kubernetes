@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yarp-gateway
+  namespace: dotnet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yarp-gateway
+  template:
+    metadata:
+      labels:
+        app: yarp-gateway
+    spec:
+      containers:
+      - name: yarp-gateway-rp
+        image: localhost:1000/yarp-gateway
+        ports:
+        - containerPort: 80
+        env:  
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ASP_URL
+          value: "http://80"
+        resources:
+          requests:
+            cpu: 10m 
+            memory: 20Mi
+          limits: 
+            cpu: 20m
+            memory: 30Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yarp-gateway-service
+  namespace: dotnet
+spec:
+  selector:
+    app: yarp-gateway
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+

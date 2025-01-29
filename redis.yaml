@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-pod
+  namespace: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: rediscache
+          image: redis
+          ports:
+            - containerPort: 6379
+          resources:
+              requests:
+                cpu: 10m
+                memory: 20Mi
+              limits:
+                cpu: 20m
+                memory: 30Mi
+---
+apiVersion: v1
+kind: Service 
+metadata:
+  name: redis-service
+  namespace: cache
+spec:
+  selector:
+      app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: LoadBalancer
