@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet   
+metadata:
+  name: local-registry-pod
+  namespace: registry
+spec:
+  serviceName: "local-registry-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: localregistry
+  template: 
+    metadata:
+      labels: 
+        app: localregistry
+    spec: 
+      containers:
+        - name: localregistry
+          image: registry:latest
+          ports: 
+            - containerPort: 5000
+          env: 
+            - name: REGISTRY_AUTH
+              value: "htpasswd"
+            - name: REGISTRY_AUTH_HTPASSWD_REALM
+              value: "Registry Realm"
+            - name: REGISTRY_AUTH_HTPASSWD_PATH
+              value: "/auth/registry.password"
+          volumeMounts: 
+            - name: shared-storage
+              mountPath: /auth
+              subPath: auth
+          resources:
+            requests:
+              cpu: 50m
+              memory: 500Mi
+            limits:
+              cpu: 100m
+              memory: 1Gi
+      volumes:
+        - name: shared-storage
+          persistentVolumeClaim:
+            claimName: registry
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: local-registry-service
+  namespace: registry
+spec: 
+  selector:
+    app: localregistry
+  ports:
+    - name: http
+      protocol: TCP
+      port: 2000
+      targetPort: 5000
+      #nodePort: 30002
+  type: LoadBalancer
+
+              
+      
