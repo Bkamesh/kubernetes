@@ -1,0 +1,95 @@
+kind: Deployment 
+apiVersion: apps/v1 
+metadata: 
+  name: airflow 
+  namespace: de 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels: 
+      app : airflow 
+  template: 
+    metadata: 
+      labels: 
+        app: airflow 
+    spec: 
+      initContainers:
+        - name: airflow-db-init
+          image: apache/airflow:2.2.4
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+              value: postgresql://airflow:admin123@postgres-service.database.svc.cluster.local:5435/airflow_metadatabase
+          command:
+            - airflow
+          args:
+            - db
+            - init
+      containers: 
+        - name: airflow-scheduler 
+          image: 'apache/airflow:2.2.4' 
+          imagePullPolicy: IfNotPresent 
+          env: 
+            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN 
+              value: postgresql://airflow:admin123@postgres-service.database.svc.cluster.local:5435/airflow_metadatabase
+            - name: AIRFLOW__CORE__EXECUTOR 
+              value: KubernetesExecutor
+          volumeMounts: 
+            - name: airflow
+              mountPath: /opt/airflow-kubernetes/logs 
+              subPath: logs
+            - name: airflow
+              mountPath: /opt/airflow-kubernetes/dags 
+              subPath: dags
+          command: 
+            - airflow 
+          args: 
+            - scheduler 
+          resources: 
+            requests: 
+              cpu: 200m 
+              memory: 512Mi
+            limits: 
+              cpu: 300m 
+              memory: 1.5Gi
+        - name: airflow-webserver 
+          image: 'apache/airflow:2.2.4'
+          env: 
+            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN 
+              value: postgresql://airflow:admin123@postgres-service.database.svc.cluster.local:5435/airflow_metadatabase
+            - name: AIRFLOW__CORE__EXECUTOR 
+              value: KubernetesExecutor
+          imagePullPolicy: IfNotPresent 
+          ports: 
+            - containerPort: 8080 
+          command: 
+            - airflow 
+          args: 
+            - webserver 
+          resources: 
+            requests: 
+              cpu: 200m 
+              memory: 512Mi
+            limits: 
+              cpu: 300m 
+              memory: 1.5Gi
+      restartPolicy: Always 
+      volumes: 
+        - name: airflow 
+          persistentVolumeClaim: 
+            claimName: airflow
+---
+kind: Service 
+apiVersion: v1 
+metadata: 
+  name: airflow 
+  namespace: de 
+spec: 
+  selector:
+    app: airflow
+  type: LoadBalancer 
+  ports: 
+    - name: http
+      protocol: TCP 
+      port: 4100
+      targetPort: 8080

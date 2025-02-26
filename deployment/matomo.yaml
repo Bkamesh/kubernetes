@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matomo-pod
+  namespace: tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matomo
+  template:
+    metadata:
+      labels:
+        app: matomo
+    spec:
+      containers:
+        - name: matomo
+          image: matomo:5.2
+          ports:
+            - containerPort: 80
+          env:
+            - name: MATOMO_DATABASE_HOST
+              value: "192.168.0.107:5433"
+            - name: MATOMO_DATABASE_ADAPTER
+              value: "mysql"
+            - name: MATOMO_DATABASE_TABLES_PREFIX
+              value: "matomo_"
+            - name: MATOMO_DATABASE_USERNAME
+              value: "kamesh"
+            - name: MATOMO_DATABASE_PASSWORD
+              value: "020@kcalb"
+            - name: MATOMO_DATABASE_DBNAME
+              value: "matomo"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 300Mi
+            limits:
+              cpu: 300m
+              memory: 600Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: matomo-service
+  namespace: tools
+spec:
+  selector:
+    app: matomo
+  ports:
+    - protocol: TCP
+      name: http
+      port: 3000
+      targetPort: 80
+  type: LoadBalancer

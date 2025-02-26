@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarqube-pod
+  namespace: devops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarqube
+  template:
+    metadata:
+      labels:
+        app: sonarqube
+    spec:
+      containers:
+        - name: sonarqube
+          image: sonarqube:9.9-community
+          ports:
+            - containerPort: 9000
+          env:
+            - name: SONAR_JDBC_URL
+              value: jdbc:postgresql://postgres-service.database.svc.cluster.local:5435/sonarqube_metdatabase
+            - name: SONAR_JDBC_USERNAME
+              value: kamesh
+            - name: SONAR_JDBC_PASSWORD
+              value: kcalb@020
+          volumeMounts:
+            - name: sonarqube
+              mountPath: /opt/sonarqube/data
+              subPath: data
+            - name: sonarqube
+              mountPath: /opt/sonarqube/logs
+              subPath: logs
+            - name: sonarqube
+              mountPath: /opt/sonarqube/extensions
+              subPath: extensions
+          resources:
+            requests:
+              memory: "1.5Gi"
+              cpu: "400m"
+            limits:
+              memory: "2.5Gi"
+              cpu: "600m"
+      volumes:
+        - name: sonarqube
+          persistentVolumeClaim:
+            claimName: sonarqube
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: sonarqube-service
+  namespace: devops
+spec: 
+  selector:
+    app: sonarqube
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 9000
+  type: LoadBalancer

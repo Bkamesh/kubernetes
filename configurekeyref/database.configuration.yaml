@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: database-password
+  name: database-configuration
   namespace: database
 data:
   username: kamesh

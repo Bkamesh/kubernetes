@@ -6,7 +6,7 @@ metadata:
 spec:
    resources:
       requests:
-        storage: 10Gi
+        storage: 5Gi
    accessModes:
        - ReadWriteMany
    storageClassName: postgres-pv
@@ -19,7 +19,59 @@ metadata:
 spec:
    resources:
       requests:
-        storage: 10Gi
+        storage: 50Mi
    accessModes:
        - ReadWriteMany
    storageClassName: registry-pv
+---
+apiVersion: v1 
+kind: PersistentVolumeClaim
+metadata: 
+  name: mysql
+  namespace: database
+spec:
+   resources:
+      requests:
+        storage: 5Gi
+   accessModes:
+       - ReadWriteMany
+   storageClassName: mysql-pv
+---
+apiVersion: v1 
+kind: PersistentVolumeClaim
+metadata: 
+  name: sonarqube
+  namespace: devops
+spec:
+   resources:
+      requests:
+        storage: 5Gi
+   accessModes:
+       - ReadWriteMany
+   storageClassName: sonarqube-pv
+---
+apiVersion: v1 
+kind: PersistentVolumeClaim
+metadata: 
+  name: prometheus
+  namespace: devops
+spec:
+   resources:
+      requests:
+        storage: 5Gi
+   accessModes:
+       - ReadWriteMany
+   storageClassName: prometheus-pv
+---
+apiVersion: v1 
+kind: PersistentVolumeClaim
+metadata: 
+  name: airflow
+  namespace: de
+spec:
+   resources:
+      requests:
+        storage: 5Gi
+   accessModes:
+       - ReadWriteMany
+   storageClassName: airflow-pv

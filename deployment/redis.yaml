@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
         - name: rediscache
-          image: localhost:5000/redis
+          image: redis:latest
+          #image: http://192.168.0.105:2000/redis:v2
           ports:
             - containerPort: 6379
           resources:
@@ -25,8 +26,8 @@ spec:
               limits:
                 cpu: 20m
                 memory: 30Mi
-      imagePullSecrets:
-        - name: dockercredentials
+      # imagePullSecrets:
+      #   - name: dockercredentials
 ---
 apiVersion: v1
 kind: Service 

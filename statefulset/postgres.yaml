@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: 
+  name: postgres-pod
+  namespace: database
+spec:
+  serviceName: "postgres-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata: 
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: admin
+            - name: POSTGRES_USER
+              value: administrator
+            - name: POSTGRES_PASSWORD
+              value: admin_postgres@123
+          volumeMounts:
+            - name: data-dir
+              mountPath: /var/lib/postgresql/data
+              subPath: data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 400m
+              memory: 1Gi
+      volumes:
+        - name: data-dir
+          persistentVolumeClaim:
+             claimName: postgres
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: postgres-service
+  namespace: database
+spec: 
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5435
+      targetPort: 5432
+  type: LoadBalancer
+          
