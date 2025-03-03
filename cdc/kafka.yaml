@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-pod
+  namespace: cdc
+spec:
+  serviceName: "kafka-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+        - name: kafka
+          image: confluentinc/cp-enterprise-kafka:5.5.3
+          env:
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "zookeeper-service:29000"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://kafka-service.cdc.svc.cluster.local:9092"
+            - name: KAFKA_BROKER_ID
+              value: "1"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_JMX_PORT
+              value: "9991"
+            - name: KAFKA_MESSAGE_MAX_BYTES
+              value: "2147483647" 
+            - name: KAFKA_REPLICA_FETCH_MAX_BYTES
+              value: "2147483647" 
+            - name: KAFKA_SOCKET_REQUEST_MAX_BYTES
+              value: "2147483647"  
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xmx2056m"
+          ports:
+            - containerPort: 9092
+          resources:
+            requests:
+              cpu: 1
+              memory: 1.5Gi
+            limits: 
+              cpu: 2
+              memory: 3.5Gi
+       # - name: kafka-ui
+         # image: provectuslabs/kafka-ui:labels
+        #  imagePullPolicy: Always
+        #  ports:
+          #  - containerPort: 8080
+      #    env: 
+           # - name: DYNAMIC_CONFIG_ENABLED
+            #  value: 'true'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: cdc
+spec:
+  selector:
+    app: kafka
+  ports:
+    - protocol: TCP
+      name: kafka-server
+      targetPort: 9092
+      port: 29100
+  type: LoadBalancer
