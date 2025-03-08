@@ -34,10 +34,10 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 512Mi
+              memory: 200Mi
             limits:
               cpu: 400m
-              memory: 1Gi
+              memory: 600Mi
       volumes:
         - name: data-dir
           persistentVolumeClaim:
@@ -53,7 +53,7 @@ spec:
     app: postgres
   ports:
     - protocol: TCP
-      port: 5435
+      port: 40000
       targetPort: 5432
   type: LoadBalancer
           

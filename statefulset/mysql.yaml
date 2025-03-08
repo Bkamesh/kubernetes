@@ -50,6 +50,6 @@ spec:
     app: mysql
   ports:
     - protocol: TCP
-      port: 5433
+      port: 50000
       targetPort: 3306
   type: LoadBalancer

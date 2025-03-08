@@ -20,7 +20,7 @@ spec:
             - containerPort: 9000
           env:
             - name: SONAR_JDBC_URL
-              value: jdbc:postgresql://postgres-service.database.svc.cluster.local:5435/sonarqube_metdatabase
+              value: jdbc:postgresql://postgres-service.database.svc.cluster.local:40000/sonarqube_metdatabase
             - name: SONAR_JDBC_USERNAME
               value: kamesh
             - name: SONAR_JDBC_PASSWORD
@@ -37,11 +37,11 @@ spec:
               subPath: extensions
           resources:
             requests:
-              memory: "1.5Gi"
-              cpu: "400m"
+              memory: "1Gi"
+              cpu: "100m"
             limits:
-              memory: "2.5Gi"
-              cpu: "600m"
+              memory: "1.6Gi"
+              cpu: "500m"
       volumes:
         - name: sonarqube
           persistentVolumeClaim:
@@ -57,6 +57,6 @@ spec:
     app: sonarqube
   ports:
     - protocol: TCP
-      port: 3000
+      port: 50000
       targetPort: 9000
   type: LoadBalancer

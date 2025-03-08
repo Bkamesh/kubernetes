@@ -29,7 +29,7 @@ spec:
             - name: GF_DATABASE_TYPE
               value: "postgres"
             - name: GF_DATABASE_HOST
-              value: "postgres-service.database.svc.cluster.local:5435"
+              value: "postgres-service.database.svc.cluster.local:40000"
             - name: GF_DATABASE_NAME
               value: "grafana_metadatabase"  
             - name: GF_DATABASE_USER
@@ -54,11 +54,11 @@ spec:
               failureThreshold: 6  
           resources:
             requests:
-               cpu: 300m
-               memory: 400Mi
+               cpu: 100m
+               memory: 100Mi
             limits:
-               cpu: 400m
-               memory: 600Mi
+               cpu: 300m
+               memory: 500Mi
 ---
 apiVersion: v1 
 kind: Service 

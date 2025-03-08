@@ -36,14 +36,18 @@ spec:
               value: KubernetesExecutor
           volumeMounts: 
             - name: airflow
-              mountPath: /opt/airflow-kubernetes/logs 
+              mountPath: /opt/airflow/logs 
               subPath: logs
             - name: airflow
-              mountPath: /opt/airflow-kubernetes/dags 
+              mountPath: /opt/airflow/dags 
               subPath: dags
+            - name: airflow
+              mountPath: /opt/airflow/config 
+              subPath: config
+            - name: airflow
+              mountPath: /opt/airflow/plugins 
+              subPath: plugins
           command: 
-            - airflow 
-          args: 
             - scheduler 
           resources: 
             requests: 
@@ -63,8 +67,6 @@ spec:
           ports: 
             - containerPort: 8080 
           command: 
-            - airflow 
-          args: 
             - webserver 
           resources: 
             requests: 

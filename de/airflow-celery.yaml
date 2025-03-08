@@ -1,0 +1,203 @@
+kind: Deployment 
+apiVersion: apps/v1 
+metadata: 
+  name: airflow-celery-pod
+  namespace: de 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels: 
+      app: airflow-celery
+  template: 
+    metadata: 
+      labels: 
+        app: airflow-celery 
+    spec: 
+      securityContext:
+        runAsUser: 50000
+      initContainers:
+        - name: airflow-db-init
+          image: 'apache/airflow:2.10.5'
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: airflow-celery-config
+          command:
+            - airflow
+          args:
+            - db
+            - init
+      containers: 
+        - name: airflow-scheduler 
+          image: 'apache/airflow:2.10.5' 
+          envFrom:
+            - configMapRef:
+                name: airflow-celery-config
+          volumeMounts: 
+            - name: airflow
+              mountPath: /opt/airflow/logs 
+              subPath: logs
+            - name: airflow
+              mountPath: /opt/airflow/dags 
+              subPath: dags
+            - name: airflow
+              mountPath: /opt/airflow/config 
+              subPath: config
+            - name: airflow
+              mountPath: /opt/airflow/plugins 
+              subPath: plugins
+          command: 
+            - airflow 
+          args: 
+            - scheduler 
+          resources: 
+            requests: 
+              cpu: 400m 
+              memory: 200Mi
+            limits: 
+              cpu: 1
+              memory: 550Mi
+        - name: airflow-webserver 
+          image: 'apache/airflow:2.10.5'
+          envFrom:
+            - configMapRef:
+                name: airflow-celery-config
+          ports: 
+            - containerPort: 8080 
+          command: 
+            - airflow 
+          args: 
+            - webserver 
+          volumeMounts: 
+            - name: airflow
+              mountPath: /opt/airflow/logs 
+              subPath: logs
+            - name: airflow
+              mountPath: /opt/airflow/dags 
+              subPath: dags
+            - name: airflow
+              mountPath: /opt/airflow/config 
+              subPath: config
+            - name: airflow
+              mountPath: /opt/airflow/plugins 
+              subPath: plugins
+          resources: 
+            requests: 
+              cpu: 400m 
+              memory: 512Mi
+            limits: 
+              cpu: 1
+              memory: 1Gi
+        - name: airflow-worker
+          image: 'apache/airflow:2.10.5'
+          envFrom:
+            - configMapRef:
+                name: airflow-celery-config
+          args: 
+            - celery
+            - worker
+          volumeMounts: 
+            - name: airflow
+              mountPath: /opt/airflow/logs 
+              subPath: logs
+            - name: airflow
+              mountPath: /opt/airflow/dags 
+              subPath: dags
+            - name: airflow
+              mountPath: /opt/airflow/config 
+              subPath: config
+            - name: airflow
+              mountPath: /opt/airflow/plugins 
+              subPath: plugins
+          resources: 
+            requests: 
+              cpu: 400m 
+              memory: 512Mi
+            limits: 
+              cpu: 1
+              memory: 2Gi
+        - name: airflow-trigger
+          image: 'apache/airflow:2.10.5'
+          envFrom:
+            - configMapRef:
+                name: airflow-celery-config
+          command: 
+            - airflow
+          args:
+            - "triggerer"
+          volumeMounts: 
+            - name: airflow
+              mountPath: /opt/airflow/logs 
+              subPath: logs
+            - name: airflow
+              mountPath: /opt/airflow/dags 
+              subPath: dags
+            - name: airflow
+              mountPath: /opt/airflow/config 
+              subPath: config
+            - name: airflow
+              mountPath: /opt/airflow/plugins 
+              subPath: plugins
+          resources: 
+            requests: 
+              cpu: 400m 
+              memory: 200Mi
+            limits: 
+              cpu: 600m
+              memory: 450Mi
+        - name: airflow-flower
+          image: 'apache/airflow:2.10.5'
+          envFrom:
+            - configMapRef:
+                name: airflow-celery-config
+          command: 
+            - airflow
+          args:
+            - "celery"
+            -  flower
+          volumeMounts: 
+            - name: airflow
+              mountPath: /opt/airflow/logs 
+              subPath: logs
+            - name: airflow
+              mountPath: /opt/airflow/dags 
+              subPath: dags
+            - name: airflow
+              mountPath: /opt/airflow/config 
+              subPath: config
+            - name: airflow
+              mountPath: /opt/airflow/plugins 
+              subPath: plugins
+          ports:
+            - containerPort: 5555
+          resources: 
+            requests: 
+              cpu: 200m 
+              memory: 200Mi
+            limits: 
+              cpu: 500m
+              memory: 450Mi
+      restartPolicy: Always 
+      volumes: 
+        - name: airflow 
+          persistentVolumeClaim: 
+            claimName: airflow
+---
+kind: Service 
+apiVersion: v1 
+metadata: 
+  name: airflow-celery-service
+  namespace: de 
+spec: 
+  selector:
+    app: airflow-celery
+  type: LoadBalancer 
+  ports: 
+    - name: webserver
+      protocol: TCP 
+      port: 28000
+      targetPort: 8080
+    - name: airflow-celery-flower
+      protocol: TCP
+      port: 29000
+      targetPort: 5555
