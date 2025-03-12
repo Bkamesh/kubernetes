@@ -1,25 +1,25 @@
 kind: Deployment 
 apiVersion: apps/v1 
 metadata: 
-  name: airflow 
+  name: airflow-k8s-pod
   namespace: de 
 spec: 
   replicas: 1 
   selector: 
     matchLabels: 
-      app : airflow 
+      app : airflow-k8s 
   template: 
     metadata: 
       labels: 
-        app: airflow 
+        app: airflow-k8s 
     spec: 
       initContainers:
         - name: airflow-db-init
-          image: apache/airflow:2.2.4
+          image: apache/airflow:2.10.5
           imagePullPolicy: IfNotPresent
-          env:
-            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
-              value: postgresql://airflow:admin123@postgres-service.database.svc.cluster.local:5435/airflow_metadatabase
+          envFrom:
+            - configMapRef:
+                name: airflow-k8s-config
           command:
             - airflow
           args:
@@ -27,13 +27,11 @@ spec:
             - init
       containers: 
         - name: airflow-scheduler 
-          image: 'apache/airflow:2.2.4' 
+          image: 'apache/airflow:2.10.5'
           imagePullPolicy: IfNotPresent 
-          env: 
-            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN 
-              value: postgresql://airflow:admin123@postgres-service.database.svc.cluster.local:5435/airflow_metadatabase
-            - name: AIRFLOW__CORE__EXECUTOR 
-              value: KubernetesExecutor
+          envFrom:
+            - configMapRef:
+                name: airflow-k8s-config
           volumeMounts: 
             - name: airflow
               mountPath: /opt/airflow/logs 
@@ -48,33 +46,48 @@ spec:
               mountPath: /opt/airflow/plugins 
               subPath: plugins
           command: 
+            - airflow 
+          args: 
             - scheduler 
           resources: 
             requests: 
               cpu: 400m 
-              memory: 512Mi
+              memory: 200Mi
             limits: 
               cpu: 1
-              memory: 1.5Gi
+              memory: 550Mi
         - name: airflow-webserver 
-          image: 'apache/airflow:2.2.4'
-          env: 
-            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN 
-              value: postgresql://airflow:admin123@postgres-service.database.svc.cluster.local:5435/airflow_metadatabase
-            - name: AIRFLOW__CORE__EXECUTOR 
-              value: KubernetesExecutor
+          image: 'apache/airflow:2.10.5'
+          envFrom:
+            - configMapRef:
+                name: airflow-k8s-config
           imagePullPolicy: IfNotPresent 
           ports: 
             - containerPort: 8080 
           command: 
+            - airflow 
+          args: 
             - webserver 
+          volumeMounts: 
+            - name: airflow
+              mountPath: /opt/airflow/logs 
+              subPath: logs
+            - name: airflow
+              mountPath: /opt/airflow/dags 
+              subPath: dags
+            - name: airflow
+              mountPath: /opt/airflow/config 
+              subPath: config
+            - name: airflow
+              mountPath: /opt/airflow/plugins 
+              subPath: plugins
           resources: 
             requests: 
               cpu: 400m 
               memory: 512Mi
             limits: 
               cpu: 1
-              memory: 1.5Gi
+              memory: 1Gi
       restartPolicy: Always 
       volumes: 
         - name: airflow 
@@ -84,14 +97,14 @@ spec:
 kind: Service 
 apiVersion: v1 
 metadata: 
-  name: airflow 
+  name: airflow-k8s-service 
   namespace: de 
 spec: 
   selector:
-    app: airflow
+    app: airflow-k8s
   type: LoadBalancer 
   ports: 
     - name: http
       protocol: TCP 
-      port: 4100
+      port: 27000
       targetPort: 8080

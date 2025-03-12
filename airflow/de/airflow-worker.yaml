@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: airflow-worker
+  namespace: de
+spec:
+  containers:
+    - name: base
+      image: "kameshbalaji/airflowbase:v1"
+      imagePullPolicy: Always
+      envFrom:
+        - configMapRef:
+            name: airflow-k8s-config
+      volumeMounts: 
+        - name: airflow
+          mountPath: /opt/airflow/logs 
+          subPath: logs
+        - name: airflow
+          mountPath: /opt/airflow/dags 
+          subPath: dags
+        - name: airflow
+          mountPath: /opt/airflow/config 
+          subPath: config
+        - name: airflow
+          mountPath: /opt/airflow/plugins 
+          subPath: plugins
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: "500m"
+        limits:
+          memory: "2Gi"
+          cpu: "1000m"
+  volumes: 
+    - name: airflow 
+      persistentVolumeClaim: 
+        claimName: airflow
+  restartPolicy: Always

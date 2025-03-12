@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+   name: airflow
+   #namespace: database
+spec:
+   capacity: 
+     storage: 5Gi
+   storageClassName : airflow-pv
+   persistentVolumeReclaimPolicy: Retain 
+   #retain,recycle,delete
+   accessModes:
+     - ReadWriteMany 
+     #rwo, rwm,rom,rwp
+   hostPath:
+     path: /mount/airflow
+     type: DirectoryOrCreate
