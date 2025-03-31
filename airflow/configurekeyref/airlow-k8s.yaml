@@ -26,6 +26,6 @@ data:
   AIRFLOW__SMTP__SMTP_STARTTLS: "True"
   AIRFLOW__SMTP__SMTP_SSL: "False"
   AIRFLOW__SMTP__SMTP_USER: "bkamesh2003@gmail.com"
-  AIRFLOW__SMTP__SMTP_PASSWORD: "pnex lhbh mjoo depv"
+  AIRFLOW__SMTP__SMTP_PASSWORD: ""
   AIRFLOW__SMTP__SMTP_MAIL_FROM: "bkamesh2003@gmail.com"
   
