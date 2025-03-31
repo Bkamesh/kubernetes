@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-ui-pod
+  namespace: cdc
+spec:
+  selector: 
+    matchLabels:
+      app: kafka-ui
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kafka-ui
+    spec:
+      containers:
+        - name: kafka-ui
+          image: provectuslabs/kafka-ui:latest       
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env: 
+            - name: DYNAMIC_CONFIG_ENABLED
+              value: 'true'
+          volumeMounts:
+            - name: kafka-ui
+              mountPath: /etc/kafkaui
+              subPath: kafka-ui
+      volumes:
+        - name: kafka-ui
+          persistentVolumeClaim:
+            claimName: kafka
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: kafka-ui-service
+ namespace: cdc
+spec:
+ selector:
+   app: kafka-ui
+ ports:
+   - name: kafka-ui
+     protocol: TCP
+     targetPort: 8080
+     port: 29200
+ type: LoadBalancer

@@ -13,6 +13,6 @@ spec:
      - ReadWriteMany 
      #rwo, rwm,rom,rwp
    hostPath:
-     path: /mount/registry
+     path: /mnt/registry
      type: DirectoryOrCreate
      #directory,directoryorcreate,file,fileorcreate

@@ -13,6 +13,6 @@ spec:
      - ReadWriteMany 
      #rwo, rwm,rom,rwp
    hostPath:
-     path: /mount/postgres
+     path: /mnt/postgres
      type: DirectoryOrCreate
      #directory,directoryorcreate,file,fileorcreate

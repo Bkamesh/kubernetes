@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: minio
+  namespace: de
+spec:
+  selector:
+    matchLabels:
+      app: minio
+  serviceName: "minio"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+        - name: minio
+          image: minio/minio:latest
+          args:
+            - server
+            - /data
+            - "--console-address=:9001"
+          env:
+            - name: MINIO_ROOT_USER
+              value: "Administrator"
+            - name: MINIO_ROOT_PASSWORD
+              value: "admin_minio@123"
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+          volumeMounts:
+            - name: storage
+              mountPath: /data
+              subPath: data
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: minio
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+  namespace: de
+spec:
+  selector:
+    app: minio
+  ports:
+    - protocol: TCP
+      port: 26000
+      targetPort: 9000
+      name: api
+    - protocol: TCP
+      port: 26100
+      targetPort: 9001
+      name: console
+  type: LoadBalancer

@@ -19,24 +19,24 @@ spec:
           image: registry:latest
           ports: 
             - containerPort: 5000
-          env: 
-            - name: REGISTRY_AUTH
-              value: "htpasswd"
-            - name: REGISTRY_AUTH_HTPASSWD_REALM
-              value: "Registry Realm"
-            - name: REGISTRY_AUTH_HTPASSWD_PATH
-              value: "/auth/registry.password"
+         # env: 
+          #  - name: REGISTRY_AUTH
+           #   value: "htpasswd"
+           # - name: REGISTRY_AUTH_HTPASSWD_REALM
+           #   value: "Registry Realm"
+           # - name: REGISTRY_AUTH_HTPASSWD_PATH
+           #   value: "/auth/registry.password"
           volumeMounts: 
             - name: shared-storage
-              mountPath: /auth
-              subPath: auth
+              mountPath: /var/lib/registry/docker/registry
+              subPath: data
           resources:
             requests:
               cpu: 50m
-              memory: 500Mi
+              memory: 100Mi
             limits:
-              cpu: 100m
-              memory: 1Gi
+              cpu: 90m
+              memory: 200Mi
       volumes:
         - name: shared-storage
           persistentVolumeClaim:
@@ -53,7 +53,7 @@ spec:
   ports:
     - name: http
       protocol: TCP
-      port: 2000
+      port: 10000
       targetPort: 5000
       #nodePort: 30002
   type: LoadBalancer

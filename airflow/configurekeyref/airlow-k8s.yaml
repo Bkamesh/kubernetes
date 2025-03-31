@@ -5,11 +5,12 @@ metadata:
   namespace: de
 data:
   AIRFLOW__CORE__EXECUTOR: KubernetesExecutor
-  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql://airflow:admin123@postgres-service.database.svc.cluster.local:40000/airflow_metadatabase
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql://kamesh:admin123@postgres-service.database.svc.cluster.local:40000/airflow_metadatabase
   AIRFLOW__CORE__FERNET_KEY: "XxOYrKcUMiPbD0A8ZJX5oPt9JhG2KjeBxiE91A9jv0U="
   AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "True"
   AIRFLOW__CORE__DEFAULT_TIMEZONE: "Asia/Kolkata"
   AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+  AIRFLOW__DATABASE__LOAD_DEFAULT_CONNECTIONS: "true"
   AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
   AIRFLOW_API__AUTH_BACKEND: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
   AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "True"

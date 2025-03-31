@@ -15,10 +15,21 @@ spec:
         app: zookeeper
     spec:
       containers:
-      - name: zookeeper
-        image: zookeeper:latest
-        ports:
-        - containerPort: 2181
+        - name: zookeeper
+          image: zookeeper:latest
+          ports:
+            - containerPort: 2181
+          volumeMounts:
+            - name: zookeeper-data
+              mountPath: /data
+              subPath: zk/data
+            - name: zookeeper-data
+              mountPath: /datalog
+              subPath: zk/datalog
+      volumes: 
+        - name: zookeeper-data
+          persistentVolumeClaim:
+            claimName: kafka
 ---
 apiVersion: v1
 kind: Service
@@ -30,6 +41,7 @@ spec:
     app: zookeeper
   ports:
     - protocol: TCP
-      targetPort: 2181
       port: 29000
+      targetPort: 2181
   type: LoadBalancer
+

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: debizium
-        image: debezium/connect:1.0
+        image: debezium/connect:3.0.0.Final
         env:
         - name: BOOTSTRAP_SERVERS
           value: "kafka-service:29100"
@@ -27,8 +27,16 @@ spec:
           value: "connect-offsets"
         - name: STATUS_STORAGE_TOPIC
           value: "connect-status"
+        volumeMounts:
+        - name: debizium-data
+          mountPath: /kafka/data
+          subPath: debizium/data
         ports:
         - containerPort: 8083
+      volumes:
+      - name: debizium-data
+        persistentVolumeClaim:
+          claimName: kafka
 ---
 apiVersion: v1
 kind: Service

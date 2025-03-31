@@ -13,5 +13,4 @@ spec:
      - ReadWriteMany 
      #rwo, rwm,rom,rwp
    hostPath:
-     path: /mount/airflow
-     type: DirectoryOrCreate
+     path: /mnt/airflow

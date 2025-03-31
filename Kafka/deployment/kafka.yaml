@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: kafka-pod
+  name: kafka-pod-0
   namespace: cdc
 spec:
   serviceName: "kafka-service"
@@ -20,8 +20,14 @@ spec:
           env:
             - name: KAFKA_ZOOKEEPER_CONNECT
               value: "zookeeper-service:29000"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "PLAINTEXT"
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: "PLAINTEXT://kafka-service.cdc.svc.cluster.local:9092"
+              value: "PLAINTEXT://$(POD_NAME).kafka-service.cdc.svc.cluster.local:9092"
             - name: KAFKA_BROKER_ID
               value: "1"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
@@ -35,24 +41,92 @@ spec:
             - name: KAFKA_SOCKET_REQUEST_MAX_BYTES
               value: "2147483647"  
             - name: KAFKA_HEAP_OPTS
-              value: "-Xmx2056m"
+              value: "-Xms2G -Xmx4G"
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /var/lib/kafka/data
+              subPath: kafka-0/data
+            - name: kafka-data
+              mountPath: /etc/kafka
+              subPath: kafka-0/config
           ports:
             - containerPort: 9092
           resources:
             requests:
               cpu: 1
-              memory: 1.5Gi
+              memory: 1Gi
             limits: 
               cpu: 2
-              memory: 3.5Gi
-       # - name: kafka-ui
-         # image: provectuslabs/kafka-ui:labels
-        #  imagePullPolicy: Always
-        #  ports:
-          #  - containerPort: 8080
-      #    env: 
-           # - name: DYNAMIC_CONFIG_ENABLED
-            #  value: 'true'
+              memory: 3Gi
+      volumes:
+       - name: kafka-data
+         persistentVolumeClaim:
+           claimName: kafka
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-pod-1
+  namespace: cdc
+spec:
+  serviceName: "kafka-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+        - name: kafka
+          image: confluentinc/cp-enterprise-kafka:5.5.3
+          env:
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "zookeeper-service:29000"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "PLAINTEXT"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://$(POD_NAME).kafka-service.cdc.svc.cluster.local:9092"
+            - name: KAFKA_BROKER_ID
+              value: "2"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_JMX_PORT
+              value: "9991"
+            - name: KAFKA_MESSAGE_MAX_BYTES
+              value: "2147483647" 
+            - name: KAFKA_REPLICA_FETCH_MAX_BYTES
+              value: "2147483647" 
+            - name: KAFKA_SOCKET_REQUEST_MAX_BYTES
+              value: "2147483647"  
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xms2G -Xmx4G"
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /var/lib/kafka/data
+              subPath: kafka-1/data
+            - name: kafka-data
+              mountPath: /etc/kafka
+              subPath: kafka-1/config
+          ports:
+            - containerPort: 9092
+          resources:
+            requests:
+              cpu: 1
+              memory: 1Gi
+            limits: 
+              cpu: 2
+              memory: 3Gi
+      volumes:
+       - name: kafka-data
+         persistentVolumeClaim:
+           claimName: kafka
 ---
 apiVersion: v1
 kind: Service

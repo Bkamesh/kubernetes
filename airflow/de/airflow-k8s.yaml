@@ -15,8 +15,8 @@ spec:
     spec: 
       initContainers:
         - name: airflow-db-init
-          image: apache/airflow:2.10.5
-          imagePullPolicy: IfNotPresent
+          image: '10.64.140.0:10000/etl/airflow:v1'
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: airflow-k8s-config
@@ -27,8 +27,8 @@ spec:
             - init
       containers: 
         - name: airflow-scheduler 
-          image: 'apache/airflow:2.10.5'
-          imagePullPolicy: IfNotPresent 
+          image: '10.64.140.0:10000/etl/airflow:v1'
+          imagePullPolicy: Always 
           envFrom:
             - configMapRef:
                 name: airflow-k8s-config
@@ -55,13 +55,13 @@ spec:
               memory: 200Mi
             limits: 
               cpu: 1
-              memory: 550Mi
+              memory: 1.5Gi
         - name: airflow-webserver 
-          image: 'apache/airflow:2.10.5'
+          image: '10.64.140.0:10000/etl/airflow:v1'
           envFrom:
             - configMapRef:
                 name: airflow-k8s-config
-          imagePullPolicy: IfNotPresent 
+          imagePullPolicy: Always 
           ports: 
             - containerPort: 8080 
           command: 
@@ -87,7 +87,7 @@ spec:
               memory: 512Mi
             limits: 
               cpu: 1
-              memory: 1Gi
+              memory: 2Gi
       restartPolicy: Always 
       volumes: 
         - name: airflow 

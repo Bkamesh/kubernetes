@@ -6,7 +6,7 @@ metadata:
 spec:
   containers:
     - name: base
-      image: "kameshbalaji/airflowbase:v1"
+      image: "10.64.140.0:10000/etl/airflow:v1"
       imagePullPolicy: Always
       envFrom:
         - configMapRef:
@@ -35,4 +35,3 @@ spec:
     - name: airflow 
       persistentVolumeClaim: 
         claimName: airflow
-  restartPolicy: Always
